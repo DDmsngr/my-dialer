@@ -1,0 +1,9 @@
+scrcpy 5.0.1 <https://github.com/Genymobile/scrcpy>
+INFO: ADB device found:
+INFO:     -->   (usb)  KFUCS4QC7LQSCUMV                device  2407FPN8EG
+[server] INFO: Device: [Xiaomi] Xiaomi 2407FPN8EG (Android 16)
+INFO: Recording started to wav file: D:\Eutonics\my_first_site\my_dialer\research\01-scrcpy\voice-call-downlink.wav
+INFO: Renderer: direct3d11
+INFO: Interop: software
+INFO: Time limit reached
+INFO: Recording complete to wav file: D:\Eutonics\my_first_site\my_dialer\research\01-scrcpy\voice-call-downlink.wav

@@ -1,0 +1,17 @@
+﻿=== 12:01:38
+    mCallState=2
+Ringer mode: 
+- zen mode:ZEN_MODE_OFF
+Audio mode: 
+  - Mode: MODE_IN_CALL
+  - Mode: MODE_IN_CALL
+  Computed Preferred communication device: null
+  Applied Preferred communication device: null
+  Active communication device: AudioDeviceAttributes: role:output type:earpiece addr: name:2407FPN8EG profiles:[{ENCODING_PCM_16BIT, sampling rates=[44100, 48000], channel masks=0x04, encapsulation type=0}, {ENCODING_PCM_32BIT, sampling rates=[44100, 48000], channel masks=0x04, encapsulation type=0}, {ENCODING_PCM_FLOAT, sampling rates=[44100, 48000], channel masks=0x04, encapsulation type=0}] descriptors:[]
+  mModeOwnerPid: 1919
+  mScoAudioMode: SCO_MODE_VIRTUAL_CALL
+	mDesiredHeadTrackingMode:HEAD_TRACKING_MODE_DISABLED
+	mActualHeadTrackingMode:HEAD_TRACKING_MODE_DISABLED
+  mWakefulness=Awake
+  mHoldingDisplaySuspendBlocker=false
+    mShowingDream=false mDreamingLockscreen=false

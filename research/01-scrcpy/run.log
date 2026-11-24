@@ -1,0 +1,10 @@
+﻿12:00:20.505 waiting for call (mCallState=2)
+12:00:46.958 call offhook:     mCallState=2
+12:00:53.536 START voice-call
+12:01:37.024 END voice-call exit=0
+12:01:38.619 START voice-call-uplink
+12:02:21.022 END voice-call-uplink exit=0
+12:02:22.560 START voice-call-downlink
+12:03:05.019 END voice-call-downlink exit=0
+12:03:06.106 after:     mCallState=2
+12:03:06.106 DONE
