@@ -16,7 +16,7 @@ import android.widget.TextView;
 import java.io.File;
 import java.util.Locale;
 
-import com.ddmsngr.mydialerprobe.service.IProbeService;
+import com.ddmsngr.mydialerprobe.service.ProbeBinder;
 import com.ddmsngr.mydialerprobe.service.UserService;
 
 import rikka.shizuku.Shizuku;
@@ -27,11 +27,11 @@ public final class MainActivity extends Activity {
     private final StringBuilder log = new StringBuilder();
     private TextView output;
     private WavRecorder appRecorder;
-    private IProbeService userService;
+    private ProbeBinder.Proxy userService;
     private Shizuku.UserServiceArgs userArgs;
     private final android.content.ServiceConnection serviceConnection = new android.content.ServiceConnection() {
         @Override public void onServiceConnected(ComponentName name, IBinder binder) {
-            userService = IProbeService.Stub.asInterface(binder);
+            userService = new ProbeBinder.Proxy(binder);
             append("UserService connected: " + call(() -> userService.identity()));
         }
         @Override public void onServiceDisconnected(ComponentName name) {

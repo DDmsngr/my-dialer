@@ -4,7 +4,7 @@ import android.os.Process;
 
 import com.ddmsngr.mydialerprobe.WavRecorder;
 
-public final class UserService extends IProbeService.Stub {
+public final class UserService extends ProbeBinder {
     private final WavRecorder recorder = new WavRecorder();
 
     public UserService() {
