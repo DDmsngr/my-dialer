@@ -1,6 +1,9 @@
 # Android/Gradle outputs and local machine state
 **/.gradle/
 **/build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
 *.iml
 local.properties
 .externalNativeBuild/
