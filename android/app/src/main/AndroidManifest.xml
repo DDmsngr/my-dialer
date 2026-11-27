@@ -59,6 +59,13 @@
             android:name=".recording.CallRecordingService"
             android:exported="false"
             android:foregroundServiceType="microphone" />
+        <receiver
+            android:name=".telecom.PhoneStateReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"
