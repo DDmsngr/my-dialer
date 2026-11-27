@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -90,6 +91,13 @@ class MainActivity : FlutterActivity() {
             if (!roleManager.isRoleHeld(RoleManager.ROLE_DIALER)) {
                 startActivityForResult(roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER), roleRequest)
             }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == roleRequest) {
+            Log.i("MyDialerRole", "role result=$resultCode held=${isDefaultDialer()}")
         }
     }
 }
