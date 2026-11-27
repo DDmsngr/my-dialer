@@ -16,6 +16,7 @@ import android.os.IBinder
 import android.os.Environment
 import android.os.Process
 import android.util.Log
+import android.content.pm.ServiceInfo
 import com.ddmsngr.my_dialer.service.ProbeBinder
 import com.ddmsngr.my_dialer.service.UserService
 import rikka.shizuku.Shizuku
@@ -55,8 +56,16 @@ class CallRecordingService : Service() {
             return START_NOT_STICKY
         }
         try {
-            startForeground(NOTIFICATION_ID, notification("Подготовка записи звонка"))
-            Log.i(TAG, "foreground started")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification("Подготовка записи звонка"),
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, notification("Подготовка записи звонка"))
+            }
+            Log.i(TAG, "foreground started type=microphone")
         } catch (error: Throwable) {
             Log.e(TAG, "foreground start failed: ${error.javaClass.simpleName}", error)
             stopSelf()

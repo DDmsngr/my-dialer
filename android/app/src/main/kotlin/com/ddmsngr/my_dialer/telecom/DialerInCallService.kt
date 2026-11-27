@@ -13,21 +13,49 @@ class DialerInCallService : InCallService() {
         Log.i(TAG, "InCallService created")
     }
 
+    override fun onBind(intent: Intent?): android.os.IBinder? {
+        Log.i(TAG, "onBind action=${intent?.action}")
+        return super.onBind(intent)
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        Log.i(TAG, "onUnbind action=${intent?.action}")
+        return super.onUnbind(intent)
+    }
+
     override fun onCallAdded(call: Call) {
         super.onCallAdded(call)
-        Log.i(TAG, "onCallAdded state=${call.state}")
-        CallRegistry.add(call)
-        call.registerCallback(object : Call.Callback() {
-            override fun onStateChanged(call: Call, state: Int) {
-                Log.i(TAG, "callback state=$state")
-                CallRegistry.stateChanged(this@DialerInCallService, call, state)
-                if (state == Call.STATE_RINGING || state == Call.STATE_ACTIVE || state == Call.STATE_DIALING) {
-                    startCallActivity()
+        Log.i(TAG, "onCallAdded state=${stateName(call.state)}")
+        try {
+            CallRegistry.add(call)
+            call.registerCallback(object : Call.Callback() {
+                override fun onStateChanged(call: Call, state: Int) {
+                    Log.i(TAG, "callback state=${stateName(state)}")
+                    try {
+                        CallRegistry.stateChanged(this@DialerInCallService, call, state)
+                        if (state == Call.STATE_RINGING || state == Call.STATE_ACTIVE || state == Call.STATE_DIALING) {
+                            startCallActivity()
+                        }
+                    } catch (error: Throwable) {
+                        Log.e(TAG, "callback handling failed: ${error.javaClass.simpleName}", error)
+                    }
                 }
-            }
-        })
-        CallRegistry.stateChanged(this, call, call.state)
-        startCallActivity()
+            })
+            CallRegistry.stateChanged(this, call, call.state)
+            startCallActivity()
+        } catch (error: Throwable) {
+            Log.e(TAG, "onCallAdded handling failed: ${error.javaClass.simpleName}", error)
+        }
+    }
+
+    private fun stateName(value: Int): String = when (value) {
+        Call.STATE_RINGING -> "RINGING"
+        Call.STATE_DIALING -> "DIALING"
+        Call.STATE_CONNECTING -> "CONNECTING"
+        Call.STATE_ACTIVE -> "ACTIVE"
+        Call.STATE_HOLDING -> "HOLDING"
+        Call.STATE_DISCONNECTED -> "DISCONNECTED"
+        else -> value.toString()
     }
 
     private fun startCallActivity() {
