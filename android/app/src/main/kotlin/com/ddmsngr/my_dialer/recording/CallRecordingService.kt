@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.IBinder
 import android.os.Environment
 import android.os.Process
+import android.util.Log
 import com.ddmsngr.my_dialer.service.ProbeBinder
 import com.ddmsngr.my_dialer.service.UserService
 import rikka.shizuku.Shizuku
@@ -31,13 +32,21 @@ class CallRecordingService : Service() {
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, binder: IBinder) {
+            Log.i(TAG, "Shizuku user service connected")
             userService = ProbeBinder.Proxy(binder)
             startShellCapture()
         }
-        override fun onServiceDisconnected(name: ComponentName) { userService = null }
+        override fun onServiceDisconnected(name: ComponentName) {
+            Log.w(TAG, "Shizuku user service disconnected")
+            userService = null
+        }
     }
 
-    override fun onCreate() { super.onCreate(); createChannel() }
+    override fun onCreate() {
+        super.onCreate()
+        createChannel()
+        Log.i(TAG, "service created")
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
@@ -45,12 +54,20 @@ class CallRecordingService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        startForeground(NOTIFICATION_ID, notification("Подготовка записи звонка"))
+        try {
+            startForeground(NOTIFICATION_ID, notification("Подготовка записи звонка"))
+            Log.i(TAG, "foreground started")
+        } catch (error: Throwable) {
+            Log.e(TAG, "foreground start failed: ${error.javaClass.simpleName}", error)
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (!running && !shizukuBound && worker == null) startWithShizuku()
         return START_NOT_STICKY
     }
 
     private fun startWithShizuku() {
+        Log.i(TAG, "starting Shizuku capture")
         try {
             if (!Shizuku.pingBinder()) { startAppCapture("Shizuku недоступен"); return }
             if (Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
@@ -62,7 +79,8 @@ class CallRecordingService : Service() {
             Shizuku.bindUserService(userServiceArgs!!, serviceConnection)
             shizukuBound = true
             getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification("Запрос shell-записи через Shizuku"))
-        } catch (_: Throwable) {
+        } catch (error: Throwable) {
+            Log.e(TAG, "Shizuku start failed: ${error.javaClass.simpleName}", error)
             startAppCapture("Не удалось подключить Shizuku")
         }
     }
@@ -71,6 +89,7 @@ class CallRecordingService : Service() {
         val directory = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "MyDialer/Recordings")
         val file = File(directory, "call-${System.currentTimeMillis()}.wav")
         val status = userService?.startRecording(file.absolutePath, 12 * 60 * 60 * 1000) ?: "UserService недоступен"
+        Log.i(TAG, "shell recorder result=$status file=${file.name}")
         getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification("Shell: $status"))
     }
 
@@ -81,11 +100,17 @@ class CallRecordingService : Service() {
         val rate = 16000
         val channels = AudioFormat.CHANNEL_IN_MONO
         val minBuffer = AudioRecord.getMinBufferSize(rate, channels, AudioFormat.ENCODING_PCM_16BIT)
-        if (minBuffer <= 0) { updateNotification("Запись недоступна: $fallbackReason"); return }
+        if (minBuffer <= 0) {
+            Log.w(TAG, "AudioRecord buffer unavailable reason=$fallbackReason")
+            updateNotification("Запись недоступна: $fallbackReason")
+            return
+        }
+        Log.i(TAG, "starting app capture reason=$fallbackReason")
         val audio = try {
             AudioRecord(MediaRecorder.AudioSource.VOICE_CALL, rate, channels, AudioFormat.ENCODING_PCM_16BIT, maxOf(minBuffer * 2, 4096))
         } catch (_: Throwable) { updateNotification("AudioRecord недоступен: $fallbackReason"); return }
         if (audio.state != AudioRecord.STATE_INITIALIZED) {
+            Log.w(TAG, "AudioRecord not initialized reason=$fallbackReason")
             audio.release()
             updateNotification("VOICE_CALL запрещён системой; Shizuku $fallbackReason")
             return
@@ -152,9 +177,14 @@ class CallRecordingService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
-    override fun onDestroy() { stopCapture(); super.onDestroy() }
+    override fun onDestroy() {
+        Log.i(TAG, "service destroyed")
+        stopCapture()
+        super.onDestroy()
+    }
 
     companion object {
+        private const val TAG = "MyDialerRecording"
         private const val CHANNEL = "call_recording"
         private const val NOTIFICATION_ID = 701
         private const val ACTION_START = "com.ddmsngr.mydialer.START_RECORDING"

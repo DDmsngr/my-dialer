@@ -4,16 +4,22 @@ import android.content.Intent
 import android.telecom.Call
 import android.telecom.InCallService
 import android.telecom.VideoProfile
-import com.ddmsngr.my_dialer.recording.CallRecordingService
+import android.util.Log
 
 class DialerInCallService : InCallService() {
-    override fun onCreate() { super.onCreate(); current = this }
+    override fun onCreate() {
+        super.onCreate()
+        current = this
+        Log.i(TAG, "InCallService created")
+    }
 
     override fun onCallAdded(call: Call) {
         super.onCallAdded(call)
+        Log.i(TAG, "onCallAdded state=${call.state}")
         CallRegistry.add(call)
         call.registerCallback(object : Call.Callback() {
             override fun onStateChanged(call: Call, state: Int) {
+                Log.i(TAG, "callback state=$state")
                 CallRegistry.stateChanged(this@DialerInCallService, call, state)
                 if (state == Call.STATE_RINGING || state == Call.STATE_ACTIVE || state == Call.STATE_DIALING) {
                     startCallActivity()
@@ -31,8 +37,8 @@ class DialerInCallService : InCallService() {
     }
 
     override fun onCallRemoved(call: Call) {
-        CallRegistry.remove(call)
-        stopService(CallRecordingService.stopIntent(this))
+        Log.i(TAG, "onCallRemoved state=${call.state}")
+        CallRegistry.remove(this, call)
         super.onCallRemoved(call)
     }
 
@@ -43,9 +49,13 @@ class DialerInCallService : InCallService() {
     fun mute(enabled: Boolean) = setMuted(enabled)
 
     override fun onDestroy() {
+        Log.i(TAG, "InCallService destroyed")
         if (current === this) current = null
         super.onDestroy()
     }
 
-    companion object { @Volatile var current: DialerInCallService? = null }
+    companion object {
+        private const val TAG = "MyDialerCall"
+        @Volatile var current: DialerInCallService? = null
+    }
 }
